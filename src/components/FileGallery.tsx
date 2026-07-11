@@ -176,7 +176,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
       )}
 
       {files.length > 0 && (
-        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
+        <ul className="grid grid-cols-2 items-start gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
           {files.map((file) => {
             const isFile = (file.item_type ?? 'file') === 'file'
             const isLink = file.item_type === 'link'
@@ -190,7 +190,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
             return (
               <li
                 key={file.id}
-                className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:p-2.5"
+                className="flex h-auto min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:p-2.5"
               >
                 <div className="flex items-start gap-2">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">

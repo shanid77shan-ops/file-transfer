@@ -5,20 +5,53 @@ import {
   isPdfItem,
   isVideoItem,
 } from '../lib/pasteUtils'
-import { getFileIcon } from '../lib/fileUtils'
+import { getFileIcon, getPreviewTier } from '../lib/fileUtils'
 import type { FileRecord } from '../types/file'
 
 interface FilePreviewProps {
   file: FileRecord
 }
 
+const textPaddingClass = {
+  compact: 'px-2 py-1.5',
+  medium: 'px-2 py-2',
+  expanded: 'px-2 py-2 max-h-52 overflow-y-auto',
+} as const
+
+const linkPaddingClass = {
+  compact: 'px-2 py-1.5',
+  medium: 'px-2 py-2',
+  expanded: 'px-2 py-2.5',
+} as const
+
+const mediaMaxHeightClass = {
+  compact: 'max-h-24',
+  medium: 'max-h-32',
+  expanded: 'max-h-44',
+} as const
+
+const pdfHeightClass = {
+  compact: 'h-24',
+  medium: 'h-32',
+  expanded: 'h-44',
+} as const
+
+const iconHeightClass = {
+  compact: 'h-12',
+  medium: 'h-16',
+  expanded: 'h-16',
+} as const
+
 export function FilePreview({ file }: FilePreviewProps) {
   const itemType = file.item_type ?? 'file'
+  const tier = getPreviewTier(file)
 
   if (itemType === 'text' && file.text_content) {
     return (
       <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
-        <p className="max-h-20 overflow-y-auto whitespace-pre-wrap break-words px-2 py-2 text-xs leading-relaxed text-slate-700">
+        <p
+          className={`whitespace-pre-wrap break-words text-xs leading-relaxed text-slate-700 ${textPaddingClass[tier]}`}
+        >
           {file.text_content}
         </p>
       </div>
@@ -27,7 +60,9 @@ export function FilePreview({ file }: FilePreviewProps) {
 
   if (itemType === 'link') {
     return (
-      <div className="mt-2 overflow-hidden rounded-lg border border-violet-200 bg-violet-50/50 px-2 py-2">
+      <div
+        className={`mt-2 overflow-hidden rounded-lg border border-violet-200 bg-violet-50/50 ${linkPaddingClass[tier]}`}
+      >
         <a
           href={file.public_url}
           target="_blank"
@@ -35,7 +70,7 @@ export function FilePreview({ file }: FilePreviewProps) {
           className="flex items-start gap-1.5 text-xs text-violet-700 underline-offset-2 hover:underline"
         >
           <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="line-clamp-2 break-all">{file.public_url}</span>
+          <span className="break-all">{file.public_url}</span>
         </a>
       </div>
     )
@@ -48,7 +83,7 @@ export function FilePreview({ file }: FilePreviewProps) {
           src={file.public_url}
           alt={file.name}
           loading="lazy"
-          className="max-h-28 w-full object-contain sm:max-h-32"
+          className={`w-full object-contain ${mediaMaxHeightClass[tier]}`}
         />
       </div>
     )
@@ -61,7 +96,7 @@ export function FilePreview({ file }: FilePreviewProps) {
           src={file.public_url}
           controls
           preload="metadata"
-          className="max-h-28 w-full object-contain sm:max-h-32"
+          className={`w-full object-contain ${mediaMaxHeightClass[tier]}`}
         >
           Your browser does not support video preview.
         </video>
@@ -85,7 +120,7 @@ export function FilePreview({ file }: FilePreviewProps) {
         <iframe
           src={file.public_url}
           title={file.name}
-          className="h-28 w-full sm:h-32"
+          className={`w-full ${pdfHeightClass[tier]}`}
         />
       </div>
     )
@@ -94,7 +129,9 @@ export function FilePreview({ file }: FilePreviewProps) {
   const Icon = getFileIcon(file.mime_type)
 
   return (
-    <div className="mt-2 flex h-14 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50">
+    <div
+      className={`mt-2 flex items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 ${iconHeightClass[tier]}`}
+    >
       <Icon className="h-5 w-5 text-slate-400" aria-hidden="true" />
     </div>
   )
