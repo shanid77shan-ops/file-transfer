@@ -7,9 +7,10 @@ import {
   Link2,
   Loader2,
   RefreshCw,
+  Trash2,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { fetchFiles } from '../lib/filesApi'
+import { deleteItem, fetchFiles } from '../lib/filesApi'
 import { downloadFile } from '../lib/downloadFile'
 import {
   formatFileSize,
@@ -36,6 +37,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const loadFiles = useCallback(async () => {
     setLoading(true)
@@ -82,6 +84,25 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
 
   const handleOpenLink = (file: FileRecord) => {
     window.open(file.public_url, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleDelete = async (file: FileRecord) => {
+    const confirmed = window.confirm(`Delete "${file.name}"? This cannot be undone.`)
+    if (!confirmed) return
+
+    setDeletingId(file.id)
+    setError(null)
+
+    try {
+      await deleteItem(file)
+      setFiles((current) => current.filter((item) => item.id !== file.id))
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Could not delete this item.'
+      setError(message)
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   return (
@@ -168,6 +189,20 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                       <span>{formatUploadDate(file.created_at)}</span>
                     </p>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete(file)}
+                    disabled={deletingId === file.id}
+                    aria-label={`Delete ${file.name}`}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deletingId === file.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
                 </div>
 
                 <FilePreview file={file} />

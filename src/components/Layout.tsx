@@ -1,4 +1,4 @@
-import { AlertTriangle, CloudUpload } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { getMissingEnvVars } from '../lib/supabaseClient'
 
 export function EnvSetupNotice() {
@@ -30,11 +30,17 @@ VITE_SUPABASE_ANON_KEY=your-anon-key`}
 export function AppHeader() {
   return (
     <header className="mb-6 text-center sm:mb-8 lg:mb-10">
-      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 sm:mb-4 sm:h-14 sm:w-14">
-        <CloudUpload className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true" />
+      <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center sm:mb-4 sm:h-24 sm:w-24">
+        <img
+          src="/logo.png"
+          alt="ShareLink logo"
+          width={96}
+          height={96}
+          className="h-full w-full rounded-full object-cover shadow-lg shadow-teal-200/80 ring-2 ring-white"
+        />
       </div>
       <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-        File Transfer
+        ShareLink
       </h1>
       <p className="mx-auto mt-2 max-w-xl px-2 text-sm leading-relaxed text-slate-500 sm:text-base">
         Upload files from any device and share download links anywhere.

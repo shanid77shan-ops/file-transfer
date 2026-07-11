@@ -1,5 +1,6 @@
 import type { FileRecord, ItemType } from '../types/file'
 import { getSupabaseClient } from './supabaseClient'
+import { BUCKET_NAME } from './uploadFile'
 
 export async function fetchFiles(): Promise<FileRecord[]> {
   const supabase = getSupabaseClient()
@@ -79,4 +80,24 @@ export async function createPasteRecord(input: {
     itemType: input.itemType,
     textContent: input.textContent,
   })
+}
+
+export async function deleteItem(file: FileRecord): Promise<void> {
+  const supabase = getSupabaseClient()
+
+  if (file.item_type === 'file' && file.storage_path) {
+    const { error: storageError } = await supabase.storage
+      .from(BUCKET_NAME)
+      .remove([file.storage_path])
+
+    if (storageError) {
+      throw new Error(`Failed to delete file from storage: ${storageError.message}`)
+    }
+  }
+
+  const { error } = await supabase.from('files').delete().eq('id', file.id)
+
+  if (error) {
+    throw new Error(`Failed to delete item: ${error.message}`)
+  }
 }
