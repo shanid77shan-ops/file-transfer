@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { fetchFiles } from '../lib/filesApi'
+import { downloadFile } from '../lib/downloadFile'
 import {
   formatFileSize,
   formatUploadDate,
@@ -23,6 +24,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   const loadFiles = useCallback(async () => {
     setLoading(true)
@@ -54,15 +56,17 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
     }
   }
 
-  const handleDownload = (file: FileRecord) => {
-    const anchor = document.createElement('a')
-    anchor.href = file.public_url
-    anchor.download = file.name
-    anchor.rel = 'noopener noreferrer'
-    anchor.target = '_blank'
-    document.body.appendChild(anchor)
-    anchor.click()
-    document.body.removeChild(anchor)
+  const handleDownload = async (file: FileRecord) => {
+    setDownloadingId(file.id)
+    setError(null)
+
+    try {
+      await downloadFile(file.public_url, file.name)
+    } catch {
+      setError(`Could not download "${file.name}". Please try again.`)
+    } finally {
+      setDownloadingId(null)
+    }
   }
 
   return (
@@ -151,11 +155,18 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4">
                   <button
                     type="button"
-                    onClick={() => handleDownload(file)}
-                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 sm:gap-2 sm:px-3"
+                    onClick={() => void handleDownload(file)}
+                    disabled={downloadingId === file.id}
+                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-70 sm:gap-2 sm:px-3"
                   >
-                    <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span className="truncate">Download</span>
+                    {downloadingId === file.id ? (
+                      <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    )}
+                    <span className="truncate">
+                      {downloadingId === file.id ? 'Saving...' : 'Download'}
+                    </span>
                   </button>
 
                   <button
