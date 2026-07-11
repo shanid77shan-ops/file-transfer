@@ -155,7 +155,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
       )}
 
       {files.length > 0 && (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-5">
           {files.map((file) => {
             const isFile = (file.item_type ?? 'file') === 'file'
             const isLink = file.item_type === 'link'
@@ -169,24 +169,22 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
             return (
               <li
                 key={file.id}
-                className="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
+                className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:p-2.5"
               >
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 sm:h-11 sm:w-11">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+                <div className="flex items-start gap-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                   </div>
 
                   <div className="min-w-0 flex-1">
                     <p
-                      className="truncate font-medium text-slate-900"
+                      className="truncate text-sm font-medium text-slate-900"
                       title={file.name}
                     >
                       {file.name}
                     </p>
-                    <p className="mt-1 flex flex-wrap gap-x-1.5 gap-y-0.5 text-xs text-slate-500">
-                      <span>{getItemLabel(file)}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{formatUploadDate(file.created_at)}</span>
+                    <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                      {getItemLabel(file)} · {formatUploadDate(file.created_at)}
                     </p>
                   </div>
 
@@ -195,26 +193,26 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                     onClick={() => void handleDelete(file)}
                     disabled={deletingId === file.id}
                     aria-label={`Delete ${file.name}`}
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {deletingId === file.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                     ) : (
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     )}
                   </button>
                 </div>
 
                 <FilePreview file={file} />
 
-                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4">
+                <div className="mt-2 grid grid-cols-2 gap-1.5">
                   {isLink ? (
                     <button
                       type="button"
                       onClick={() => handleOpenLink(file)}
-                      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 sm:gap-2 sm:px-3"
+                      className="inline-flex min-h-8 items-center justify-center gap-1 rounded-md bg-indigo-600 px-1.5 py-1.5 text-xs font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800"
                     >
-                      <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                       <span className="truncate">Open</span>
                     </button>
                   ) : isFile ? (
@@ -222,36 +220,36 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                       type="button"
                       onClick={() => void handleDownload(file)}
                       disabled={downloadingId === file.id}
-                      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-70 sm:gap-2 sm:px-3"
+                      className="inline-flex min-h-8 items-center justify-center gap-1 rounded-md bg-indigo-600 px-1.5 py-1.5 text-xs font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       {downloadingId === file.id ? (
-                        <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+                        <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden="true" />
                       ) : (
-                        <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        <Download className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                       )}
                       <span className="truncate">
-                        {downloadingId === file.id ? 'Saving...' : 'Download'}
+                        {downloadingId === file.id ? '...' : 'Save'}
                       </span>
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => void handleCopy(file)}
-                      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 sm:gap-2 sm:px-3"
+                      className="inline-flex min-h-8 items-center justify-center gap-1 rounded-md bg-indigo-600 px-1.5 py-1.5 text-xs font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800"
                     >
-                      <Copy className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      <span className="truncate">Copy Text</span>
+                      <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="truncate">Copy</span>
                     </button>
                   )}
 
                   <button
                     type="button"
                     onClick={() => void handleCopy(file)}
-                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100 sm:gap-2 sm:px-3"
+                    className="inline-flex min-h-8 items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100"
                   >
-                    <Copy className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">
-                      {copiedId === file.id ? 'Copied!' : isLink ? 'Copy URL' : 'Copy'}
+                      {copiedId === file.id ? 'OK' : isLink ? 'URL' : 'Copy'}
                     </span>
                   </button>
                 </div>
