@@ -2,6 +2,9 @@ import {
   AlertCircle,
   Copy,
   Download,
+  ExternalLink,
+  FileText,
+  Link2,
   Loader2,
   RefreshCw,
 } from 'lucide-react'
@@ -13,10 +16,18 @@ import {
   formatUploadDate,
   getFileIcon,
 } from '../lib/fileUtils'
+import { getCopyValue } from '../lib/pasteUtils'
 import type { FileRecord } from '../types/file'
+import { FilePreview } from './FilePreview'
 
 interface FileGalleryProps {
   refreshKey: number
+}
+
+function getItemLabel(file: FileRecord): string {
+  if (file.item_type === 'link') return 'Link'
+  if (file.item_type === 'text') return 'Text'
+  return formatFileSize(file.size)
 }
 
 export function FileGallery({ refreshKey }: FileGalleryProps) {
@@ -46,13 +57,13 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
     void loadFiles()
   }, [loadFiles, refreshKey])
 
-  const handleCopyLink = async (file: FileRecord) => {
+  const handleCopy = async (file: FileRecord) => {
     try {
-      await navigator.clipboard.writeText(file.public_url)
+      await navigator.clipboard.writeText(getCopyValue(file))
       setCopiedId(file.id)
       window.setTimeout(() => setCopiedId(null), 2000)
     } catch {
-      setError('Could not copy link. Your browser may have blocked clipboard access.')
+      setError('Could not copy. Your browser may have blocked clipboard access.')
     }
   }
 
@@ -69,15 +80,19 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
     }
   }
 
+  const handleOpenLink = (file: FileRecord) => {
+    window.open(file.public_url, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <section className="w-full">
       <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
-            Your files
+            Your items
           </h2>
           <p className="text-sm text-slate-500">
-            Download or share links from any device
+            Files, links, and text — with previews
           </p>
         </div>
 
@@ -85,7 +100,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
           type="button"
           onClick={() => void loadFiles()}
           disabled={loading}
-          aria-label="Refresh file list"
+          aria-label="Refresh list"
           className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-h-0 sm:px-3 sm:py-2"
         >
           <RefreshCw
@@ -99,7 +114,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
       {loading && files.length === 0 && (
         <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-12 text-sm text-slate-500 sm:px-6 sm:py-16">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
-          Loading files...
+          Loading...
         </div>
       )}
 
@@ -113,15 +128,22 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
       {!loading && !error && files.length === 0 && (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-12 text-center sm:px-6 sm:py-16">
           <p className="text-sm text-slate-500">
-            No files yet. Upload your first file above.
+            Nothing here yet. Upload a file or paste a link above.
           </p>
         </div>
       )}
 
       {files.length > 0 && (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {files.map((file) => {
-            const Icon = getFileIcon(file.mime_type)
+            const isFile = (file.item_type ?? 'file') === 'file'
+            const isLink = file.item_type === 'link'
+            const Icon =
+              file.item_type === 'link'
+                ? Link2
+                : file.item_type === 'text'
+                  ? FileText
+                  : getFileIcon(file.mime_type)
 
             return (
               <li
@@ -141,42 +163,60 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                       {file.name}
                     </p>
                     <p className="mt-1 flex flex-wrap gap-x-1.5 gap-y-0.5 text-xs text-slate-500">
-                      <span>{formatFileSize(file.size)}</span>
-                      <span className="hidden sm:inline" aria-hidden="true">
-                        ·
-                      </span>
-                      <span className="block w-full sm:inline sm:w-auto">
-                        {formatUploadDate(file.created_at)}
-                      </span>
+                      <span>{getItemLabel(file)}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{formatUploadDate(file.created_at)}</span>
                     </p>
                   </div>
                 </div>
 
+                <FilePreview file={file} />
+
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-4">
-                  <button
-                    type="button"
-                    onClick={() => void handleDownload(file)}
-                    disabled={downloadingId === file.id}
-                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-70 sm:gap-2 sm:px-3"
-                  >
-                    {downloadingId === file.id ? (
-                      <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    )}
-                    <span className="truncate">
-                      {downloadingId === file.id ? 'Saving...' : 'Download'}
-                    </span>
-                  </button>
+                  {isLink ? (
+                    <button
+                      type="button"
+                      onClick={() => handleOpenLink(file)}
+                      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 sm:gap-2 sm:px-3"
+                    >
+                      <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">Open</span>
+                    </button>
+                  ) : isFile ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleDownload(file)}
+                      disabled={downloadingId === file.id}
+                      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-70 sm:gap-2 sm:px-3"
+                    >
+                      {downloadingId === file.id ? (
+                        <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+                      ) : (
+                        <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      )}
+                      <span className="truncate">
+                        {downloadingId === file.id ? 'Saving...' : 'Download'}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void handleCopy(file)}
+                      className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-2 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 active:bg-indigo-800 sm:gap-2 sm:px-3"
+                    >
+                      <Copy className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">Copy Text</span>
+                    </button>
+                  )}
 
                   <button
                     type="button"
-                    onClick={() => void handleCopyLink(file)}
+                    onClick={() => void handleCopy(file)}
                     className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100 sm:gap-2 sm:px-3"
                   >
                     <Copy className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span className="truncate">
-                      {copiedId === file.id ? 'Copied!' : 'Copy Link'}
+                      {copiedId === file.id ? 'Copied!' : isLink ? 'Copy URL' : 'Copy'}
                     </span>
                   </button>
                 </div>

@@ -2,10 +2,13 @@ import { useState } from 'react'
 import { FileDropzone } from './components/FileDropzone'
 import { FileGallery } from './components/FileGallery'
 import { AppHeader, EnvSetupNotice } from './components/Layout'
+import { PasteInput } from './components/PasteInput'
 import { isSupabaseConfigured } from './lib/supabaseClient'
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0)
+
+  const handleRefresh = () => setRefreshKey((key) => key + 1)
 
   return (
     <div className="min-h-svh bg-gradient-to-b from-slate-50 to-white">
@@ -16,7 +19,8 @@ function App() {
           <EnvSetupNotice />
         ) : (
           <div className="space-y-8 sm:space-y-10 lg:space-y-12">
-            <FileDropzone onUploadComplete={() => setRefreshKey((key) => key + 1)} />
+            <FileDropzone onUploadComplete={handleRefresh} />
+            <PasteInput onSaveComplete={handleRefresh} />
             <FileGallery refreshKey={refreshKey} />
           </div>
         )}
