@@ -1,6 +1,6 @@
 {
-  "name": "ShareLink",
-  "short_name": "ShareLink",
+  "name": "Easy File",
+  "short_name": "Easy File",
   "description": "Upload files, links, and text from any device and share anywhere.",
   "start_url": "/",
   "scope": "/",

@@ -33,14 +33,14 @@ export function AppHeader() {
       <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center sm:mb-4 sm:h-24 sm:w-24">
         <img
           src="/logo.png"
-          alt="ShareLink logo"
+          alt="Easy File logo"
           width={96}
           height={96}
           className="h-full w-full rounded-full object-cover shadow-lg shadow-teal-200/80 ring-2 ring-white"
         />
       </div>
       <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
-        ShareLink
+        Easy File
       </h1>
       <p className="mx-auto mt-2 max-w-xl px-2 text-sm leading-relaxed text-slate-500 sm:text-base">
         Upload files from any device and share download links anywhere.

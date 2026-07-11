@@ -1,4 +1,4 @@
-# File Transfer
+# Easy File
 
 A responsive, cross-platform file sharing app built with React, Vite, Tailwind CSS, and Supabase.
 
