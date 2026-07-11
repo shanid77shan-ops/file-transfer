@@ -2,7 +2,8 @@ import { AlertCircle, CheckCircle2, Loader2, UploadCloud } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { createFileRecord } from '../lib/filesApi'
-import { uploadFileWithProgress } from '../lib/uploadFile'
+import { formatFileSize } from '../lib/fileUtils'
+import { isLargeFileUpload, uploadFileWithProgress } from '../lib/uploadFile'
 
 interface FileDropzoneProps {
   onUploadComplete: () => void
@@ -10,7 +11,13 @@ interface FileDropzoneProps {
 
 type UploadState =
   | { status: 'idle' }
-  | { status: 'uploading'; fileName: string; percent: number }
+  | {
+      status: 'uploading'
+      fileName: string
+      percent: number
+      fileSize: number
+      resumable: boolean
+    }
   | { status: 'success'; fileName: string }
   | { status: 'error'; message: string }
 
@@ -22,11 +29,23 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
       const file = acceptedFiles[0]
       if (!file) return
 
-      setUploadState({ status: 'uploading', fileName: file.name, percent: 0 })
+      setUploadState({
+        status: 'uploading',
+        fileName: file.name,
+        percent: 0,
+        fileSize: file.size,
+        resumable: isLargeFileUpload(file),
+      })
 
       try {
         const { path, publicUrl } = await uploadFileWithProgress(file, (percent) => {
-          setUploadState({ status: 'uploading', fileName: file.name, percent })
+          setUploadState({
+            status: 'uploading',
+            fileName: file.name,
+            percent,
+            fileSize: file.size,
+            resumable: isLargeFileUpload(file),
+          })
         })
 
         await createFileRecord({
@@ -98,17 +117,25 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
           or click to browse from your device
         </p>
         <p className="mt-3 text-xs text-slate-400">
-          Images, audio, documents, and more
+          Photos, videos, audio, and documents — large files supported
         </p>
       </div>
 
       {uploadState.status === 'uploading' && (
         <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
-          <div className="mb-2 flex items-center justify-between gap-2 text-sm sm:gap-3">
-            <span className="min-w-0 truncate font-medium text-slate-800">
-              Uploading {uploadState.fileName}
-            </span>
-            <span className="shrink-0 tabular-nums text-slate-500">
+          <div className="mb-2 flex items-start justify-between gap-2 sm:items-center sm:gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-slate-800">
+                Uploading {uploadState.fileName}
+              </p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                {formatFileSize(Math.round((uploadState.percent / 100) * uploadState.fileSize))}
+                {' / '}
+                {formatFileSize(uploadState.fileSize)}
+                {uploadState.resumable ? ' · Resumable upload' : ''}
+              </p>
+            </div>
+            <span className="shrink-0 tabular-nums text-sm text-slate-500">
               {uploadState.percent}%
             </span>
           </div>
