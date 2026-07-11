@@ -9,13 +9,13 @@ function App() {
 
   return (
     <div className="min-h-svh bg-gradient-to-b from-slate-50 to-white">
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+      <main className="mx-auto w-full max-w-6xl px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-6 sm:py-10 lg:px-8 lg:py-12">
         <AppHeader />
 
         {!isSupabaseConfigured ? (
           <EnvSetupNotice />
         ) : (
-          <div className="space-y-10">
+          <div className="space-y-8 sm:space-y-10 lg:space-y-12">
             <FileDropzone onUploadComplete={() => setRefreshKey((key) => key + 1)} />
             <FileGallery refreshKey={refreshKey} />
           </div>
