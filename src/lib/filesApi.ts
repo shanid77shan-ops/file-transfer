@@ -82,6 +82,29 @@ export async function createPasteRecord(input: {
   })
 }
 
+export async function updateItemName(id: string, name: string): Promise<FileRecord> {
+  const supabase = getSupabaseClient()
+
+  const { data, error } = await supabase
+    .from('files')
+    .update({ name })
+    .eq('id', id)
+    .select('*')
+    .single()
+
+  if (error) {
+    throw new Error(`Failed to rename item: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error(
+      'Rename failed — permission denied. Run migration 005_add_update_policies.sql in Supabase.',
+    )
+  }
+
+  return normalizeFileRecord(data as FileRecord)
+}
+
 export async function deleteItem(file: FileRecord): Promise<void> {
   const supabase = getSupabaseClient()
   const itemType = file.item_type ?? 'file'

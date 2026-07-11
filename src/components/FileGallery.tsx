@@ -10,7 +10,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { deleteItem, fetchFiles } from '../lib/filesApi'
+import { deleteItem, fetchFiles, updateItemName } from '../lib/filesApi'
 import { downloadFile } from '../lib/downloadFile'
 import {
   formatFileSize,
@@ -19,6 +19,7 @@ import {
 } from '../lib/fileUtils'
 import { getCopyValue } from '../lib/pasteUtils'
 import type { FileRecord } from '../types/file'
+import { EditableItemName } from './EditableItemName'
 import { FilePreview } from './FilePreview'
 
 interface FileGalleryProps {
@@ -38,6 +39,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
 
   const loadFiles = useCallback(async () => {
     setLoading(true)
@@ -84,6 +86,25 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
 
   const handleOpenLink = (file: FileRecord) => {
     window.open(file.public_url, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleRename = async (file: FileRecord, name: string) => {
+    setRenamingId(file.id)
+    setError(null)
+
+    try {
+      const updated = await updateItemName(file.id, name)
+      setFiles((current) =>
+        current.map((item) => (item.id === file.id ? updated : item)),
+      )
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Could not rename this item.'
+      setError(message)
+      throw err
+    } finally {
+      setRenamingId(null)
+    }
   }
 
   const handleDelete = async (file: FileRecord) => {
@@ -176,24 +197,12 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="truncate text-sm font-medium text-slate-900"
-                      title={file.name}
-                    >
-                      {file.name}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] text-slate-500">
-                      {getItemLabel(file)} · {formatUploadDate(file.created_at)}
-                    </p>
-                  </div>
-
                   <button
                     type="button"
                     onClick={() => void handleDelete(file)}
                     disabled={deletingId === file.id}
                     aria-label={`Delete ${file.name}`}
-                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="ml-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {deletingId === file.id ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
@@ -201,6 +210,17 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     )}
                   </button>
+                </div>
+
+                <div className="mt-1.5">
+                  <EditableItemName
+                    name={file.name}
+                    saving={renamingId === file.id}
+                    onSave={(name) => handleRename(file, name)}
+                  />
+                  <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                    {getItemLabel(file)} · {formatUploadDate(file.created_at)}
+                  </p>
                 </div>
 
                 <FilePreview file={file} />
