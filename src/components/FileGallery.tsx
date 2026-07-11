@@ -95,7 +95,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
 
     try {
       await deleteItem(file)
-      setFiles((current) => current.filter((item) => item.id !== file.id))
+      await loadFiles()
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Could not delete this item.'

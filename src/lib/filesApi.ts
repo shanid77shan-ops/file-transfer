@@ -84,20 +84,31 @@ export async function createPasteRecord(input: {
 
 export async function deleteItem(file: FileRecord): Promise<void> {
   const supabase = getSupabaseClient()
+  const itemType = file.item_type ?? 'file'
 
-  if (file.item_type === 'file' && file.storage_path) {
+  const { data, error } = await supabase
+    .from('files')
+    .delete()
+    .eq('id', file.id)
+    .select('id')
+
+  if (error) {
+    throw new Error(`Failed to delete item: ${error.message}`)
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error(
+      'Delete failed — permission denied. Ask the app owner to enable delete policies in Supabase.',
+    )
+  }
+
+  if (itemType === 'file' && file.storage_path) {
     const { error: storageError } = await supabase.storage
       .from(BUCKET_NAME)
       .remove([file.storage_path])
 
     if (storageError) {
-      throw new Error(`Failed to delete file from storage: ${storageError.message}`)
+      console.warn('Storage cleanup failed:', storageError.message)
     }
-  }
-
-  const { error } = await supabase.from('files').delete().eq('id', file.id)
-
-  if (error) {
-    throw new Error(`Failed to delete item: ${error.message}`)
   }
 }
