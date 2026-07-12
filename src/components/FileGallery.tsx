@@ -61,6 +61,28 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
     void loadFiles()
   }, [loadFiles, refreshKey])
 
+  useEffect(() => {
+    const refreshOnVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void loadFiles()
+      }
+    }
+
+    const refreshOnPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        void loadFiles()
+      }
+    }
+
+    document.addEventListener('visibilitychange', refreshOnVisible)
+    window.addEventListener('pageshow', refreshOnPageShow)
+
+    return () => {
+      document.removeEventListener('visibilitychange', refreshOnVisible)
+      window.removeEventListener('pageshow', refreshOnPageShow)
+    }
+  }, [loadFiles])
+
   const handleCopy = async (file: FileRecord) => {
     try {
       await navigator.clipboard.writeText(getCopyValue(file))
@@ -108,19 +130,17 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
   }
 
   const handleDelete = async (file: FileRecord) => {
-    const confirmed = window.confirm(`Delete "${file.name}"? This cannot be undone.`)
-    if (!confirmed) return
-
     setDeletingId(file.id)
     setError(null)
 
     try {
       await deleteItem(file)
-      await loadFiles()
+      setFiles((current) => current.filter((item) => item.id !== file.id))
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Could not delete this item.'
       setError(message)
+      void loadFiles()
     } finally {
       setDeletingId(null)
     }

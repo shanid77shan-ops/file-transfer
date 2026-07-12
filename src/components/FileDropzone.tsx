@@ -17,8 +17,15 @@ type UploadState =
       percent: number
       fileSize: number
       resumable: boolean
+      currentIndex: number
+      totalCount: number
     }
-  | { status: 'success'; fileName: string }
+  | { status: 'success'; count: number; fileNames: string[] }
+  | {
+      status: 'partial'
+      successCount: number
+      failures: Array<{ fileName: string; message: string }>
+    }
   | { status: 'error'; message: string }
 
 export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
@@ -26,54 +33,87 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      const file = acceptedFiles[0]
-      if (!file) return
+      if (acceptedFiles.length === 0) return
 
-      setUploadState({
-        status: 'uploading',
-        fileName: file.name,
-        percent: 0,
-        fileSize: file.size,
-        resumable: isLargeFileUpload(file),
-      })
+      const totalCount = acceptedFiles.length
+      const uploadedNames: string[] = []
+      const failures: Array<{ fileName: string; message: string }> = []
 
-      try {
-        const { path, publicUrl } = await uploadFileWithProgress(file, (percent) => {
-          setUploadState({
-            status: 'uploading',
-            fileName: file.name,
-            percent,
-            fileSize: file.size,
-            resumable: isLargeFileUpload(file),
+      for (let index = 0; index < acceptedFiles.length; index++) {
+        const file = acceptedFiles[index]
+
+        setUploadState({
+          status: 'uploading',
+          fileName: file.name,
+          percent: 0,
+          fileSize: file.size,
+          resumable: isLargeFileUpload(file),
+          currentIndex: index + 1,
+          totalCount,
+        })
+
+        try {
+          const { path, publicUrl } = await uploadFileWithProgress(file, (percent) => {
+            setUploadState({
+              status: 'uploading',
+              fileName: file.name,
+              percent,
+              fileSize: file.size,
+              resumable: isLargeFileUpload(file),
+              currentIndex: index + 1,
+              totalCount,
+            })
           })
-        })
 
-        await createFileRecord({
-          name: file.name,
-          size: file.size,
-          mimeType: file.type || 'application/octet-stream',
-          storagePath: path,
-          publicUrl,
-        })
+          await createFileRecord({
+            name: file.name,
+            size: file.size,
+            mimeType: file.type || 'application/octet-stream',
+            storagePath: path,
+            publicUrl,
+          })
 
-        setUploadState({ status: 'success', fileName: file.name })
-        onUploadComplete()
-
-        window.setTimeout(() => {
-          setUploadState({ status: 'idle' })
-        }, 2500)
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Upload failed. Please try again.'
-        setUploadState({ status: 'error', message })
+          uploadedNames.push(file.name)
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'Upload failed. Please try again.'
+          failures.push({ fileName: file.name, message })
+        }
       }
+
+      if (uploadedNames.length > 0) {
+        onUploadComplete()
+      }
+
+      if (failures.length === 0) {
+        setUploadState({
+          status: 'success',
+          count: uploadedNames.length,
+          fileNames: uploadedNames,
+        })
+      } else if (uploadedNames.length > 0) {
+        setUploadState({
+          status: 'partial',
+          successCount: uploadedNames.length,
+          failures,
+        })
+      } else {
+        setUploadState({
+          status: 'error',
+          message: failures[0]?.message ?? 'Upload failed. Please try again.',
+        })
+      }
+
+      window.setTimeout(() => {
+        setUploadState({ status: 'idle' })
+      }, failures.length > 0 ? 5000 : 2500)
     },
     [onUploadComplete],
   )
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop,
-    multiple: false,
+    multiple: true,
     disabled: uploadState.status === 'uploading',
   })
 
@@ -105,16 +145,16 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
         </div>
 
         <p className="text-base font-medium text-slate-900 sm:hidden">
-          {isDragActive ? 'Drop your file here' : 'Tap to upload a file'}
+          {isDragActive ? 'Drop your files here' : 'Tap to upload files'}
         </p>
         <p className="hidden text-base font-medium text-slate-900 sm:block sm:text-lg">
-          {isDragActive ? 'Drop your file here' : 'Drag & drop a file here'}
+          {isDragActive ? 'Drop your files here' : 'Drag & drop files here'}
         </p>
         <p className="mt-1 text-sm text-slate-500 sm:hidden">
-          Choose from photos, files, or documents
+          Select multiple photos or files at once
         </p>
         <p className="mt-1 hidden text-sm text-slate-500 sm:block">
-          or click to browse from your device
+          or click to browse — select multiple files at once
         </p>
         <p className="mt-3 text-xs text-slate-400">
           Photos, videos, audio, and documents — large files supported
@@ -126,7 +166,8 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
           <div className="mb-2 flex items-start justify-between gap-2 sm:items-center sm:gap-3">
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-slate-800">
-                Uploading {uploadState.fileName}
+                Uploading {uploadState.currentIndex} of {uploadState.totalCount}:{' '}
+                {uploadState.fileName}
               </p>
               <p className="mt-0.5 text-xs text-slate-500">
                 {formatFileSize(Math.round((uploadState.percent / 100) * uploadState.fileSize))}
@@ -156,9 +197,37 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
         <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 sm:p-4">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <p className="min-w-0 break-words">
-            <span className="font-medium">{uploadState.fileName}</span> uploaded
-            successfully.
+            {uploadState.count === 1 ? (
+              <>
+                <span className="font-medium">{uploadState.fileNames[0]}</span> uploaded
+                successfully.
+              </>
+            ) : (
+              <>
+                <span className="font-medium">{uploadState.count} files</span> uploaded
+                successfully.
+              </>
+            )}
           </p>
+        </div>
+      )}
+
+      {uploadState.status === 'partial' && (
+        <div className="mt-4 space-y-2">
+          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:p-4">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <p className="min-w-0 break-words">
+              <span className="font-medium">{uploadState.successCount} files</span> uploaded.{' '}
+              {uploadState.failures.length} failed.
+            </p>
+          </div>
+          <ul className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 sm:p-4">
+            {uploadState.failures.map((failure) => (
+              <li key={failure.fileName} className="break-words">
+                <span className="font-medium">{failure.fileName}:</span> {failure.message}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
