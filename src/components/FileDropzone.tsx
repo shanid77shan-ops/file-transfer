@@ -126,9 +126,9 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
         className={[
           'relative flex min-h-[11rem] cursor-pointer touch-manipulation select-none flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-6 text-center transition-colors active:scale-[0.99] sm:min-h-52 sm:px-6 sm:py-8 lg:min-h-56',
           isDragActive && !isDragReject
-            ? 'border-indigo-500 bg-indigo-50'
-            : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50 active:border-indigo-400 active:bg-indigo-50/50',
-          isDragReject ? 'border-red-400 bg-red-50' : '',
+            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40'
+            : 'border-slate-300 bg-white hover:border-indigo-400 hover:bg-slate-50 active:border-indigo-400 active:bg-indigo-50/50 dark:border-slate-600 dark:bg-slate-900 dark:hover:border-indigo-500 dark:hover:bg-slate-800 dark:active:bg-indigo-950/30',
+          isDragReject ? 'border-red-400 bg-red-50 dark:bg-red-950/40' : '',
           isUploading ? 'pointer-events-none opacity-80' : '',
         ]
           .filter(Boolean)
@@ -136,7 +136,7 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
       >
         <input {...getInputProps()} />
 
-        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 sm:h-12 sm:w-12">
+        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 sm:h-12 sm:w-12">
           {isUploading ? (
             <Loader2 className="h-7 w-7 animate-spin sm:h-6 sm:w-6" aria-hidden="true" />
           ) : (
@@ -144,43 +144,43 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
           )}
         </div>
 
-        <p className="text-base font-medium text-slate-900 sm:hidden">
+        <p className="text-base font-medium text-slate-900 dark:text-slate-100 sm:hidden">
           {isDragActive ? 'Drop your files here' : 'Tap to upload files'}
         </p>
-        <p className="hidden text-base font-medium text-slate-900 sm:block sm:text-lg">
+        <p className="hidden text-base font-medium text-slate-900 dark:text-slate-100 sm:block sm:text-lg">
           {isDragActive ? 'Drop your files here' : 'Drag & drop files here'}
         </p>
-        <p className="mt-1 text-sm text-slate-500 sm:hidden">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 sm:hidden">
           Select multiple photos or files at once
         </p>
-        <p className="mt-1 hidden text-sm text-slate-500 sm:block">
+        <p className="mt-1 hidden text-sm text-slate-500 dark:text-slate-400 sm:block">
           or click to browse — select multiple files at once
         </p>
-        <p className="mt-3 text-xs text-slate-400">
+        <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
           Photos, videos, audio, and documents — large files supported
         </p>
       </div>
 
       {uploadState.status === 'uploading' && (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900 sm:p-4">
           <div className="mb-2 flex items-start justify-between gap-2 sm:items-center sm:gap-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-slate-800">
+              <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
                 Uploading {uploadState.currentIndex} of {uploadState.totalCount}:{' '}
                 {uploadState.fileName}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 {formatFileSize(Math.round((uploadState.percent / 100) * uploadState.fileSize))}
                 {' / '}
                 {formatFileSize(uploadState.fileSize)}
                 {uploadState.resumable ? ' · Resumable upload' : ''}
               </p>
             </div>
-            <span className="shrink-0 tabular-nums text-sm text-slate-500">
+            <span className="shrink-0 tabular-nums text-sm text-slate-500 dark:text-slate-400">
               {uploadState.percent}%
             </span>
           </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-slate-100 sm:h-2">
+          <div className="h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 sm:h-2">
             <div
               className="h-full rounded-full bg-indigo-500 transition-all duration-200"
               style={{ width: `${uploadState.percent}%` }}
@@ -194,7 +194,7 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
       )}
 
       {uploadState.status === 'success' && (
-        <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 sm:p-4">
+        <div className="mt-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 sm:p-4">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <p className="min-w-0 break-words">
             {uploadState.count === 1 ? (
@@ -214,14 +214,14 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
 
       {uploadState.status === 'partial' && (
         <div className="mt-4 space-y-2">
-          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:p-4">
+          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200 sm:p-4">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
             <p className="min-w-0 break-words">
               <span className="font-medium">{uploadState.successCount} files</span> uploaded.{' '}
               {uploadState.failures.length} failed.
             </p>
           </div>
-          <ul className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 sm:p-4">
+          <ul className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200 sm:p-4">
             {uploadState.failures.map((failure) => (
               <li key={failure.fileName} className="break-words">
                 <span className="font-medium">{failure.fileName}:</span> {failure.message}
@@ -232,7 +232,7 @@ export function FileDropzone({ onUploadComplete }: FileDropzoneProps) {
       )}
 
       {uploadState.status === 'error' && (
-        <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 sm:p-4">
+        <div className="mt-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200 sm:p-4">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <p className="min-w-0 break-words">{uploadState.message}</p>
         </div>

@@ -150,10 +150,10 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
     <section className="w-full">
       <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 sm:text-xl">
             Your items
           </h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Files, links, and text — with previews
           </p>
         </div>
@@ -163,7 +163,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
           onClick={() => void loadFiles()}
           disabled={loading}
           aria-label="Refresh list"
-          className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:min-h-0 sm:px-3 sm:py-2"
+          className="inline-flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:active:bg-slate-700 sm:w-auto sm:min-h-0 sm:px-3 sm:py-2"
         >
           <RefreshCw
             className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
@@ -174,22 +174,22 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
       </div>
 
       {loading && files.length === 0 && (
-        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-12 text-sm text-slate-500 sm:px-6 sm:py-16">
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-12 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 sm:px-6 sm:py-16">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
           Loading...
         </div>
       )}
 
       {error && (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 sm:p-4">
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200 sm:p-4">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <p className="min-w-0 break-words">{error}</p>
         </div>
       )}
 
       {!loading && !error && files.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-12 text-center sm:px-6 sm:py-16">
-          <p className="text-sm text-slate-500">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-12 text-center dark:border-slate-600 dark:bg-slate-900 sm:px-6 sm:py-16">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Nothing here yet. Upload a file or paste a link above.
           </p>
         </div>
@@ -210,10 +210,10 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
             return (
               <li
                 key={file.id}
-                className="flex h-auto min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:p-2.5"
+                className="flex h-auto min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-2.5"
               >
                 <div className="flex items-start gap-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </div>
 
@@ -222,7 +222,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                     onClick={() => void handleDelete(file)}
                     disabled={deletingId === file.id}
                     aria-label={`Delete ${file.name}`}
-                    className="ml-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="ml-auto inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-600 transition hover:bg-red-100 active:bg-red-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60 dark:active:bg-red-950/80"
                   >
                     {deletingId === file.id ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
@@ -238,7 +238,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                     saving={renamingId === file.id}
                     onSave={(name) => handleRename(file, name)}
                   />
-                  <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                  <p className="mt-0.5 truncate text-[11px] text-slate-500 dark:text-slate-400">
                     {getItemLabel(file)} · {formatUploadDate(file.created_at)}
                   </p>
                 </div>
@@ -285,7 +285,7 @@ export function FileGallery({ refreshKey }: FileGalleryProps) {
                   <button
                     type="button"
                     onClick={() => void handleCopy(file)}
-                    className="inline-flex min-h-8 items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100"
+                    className="inline-flex min-h-8 items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 active:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:active:bg-slate-600"
                   >
                     <Copy className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span className="truncate">

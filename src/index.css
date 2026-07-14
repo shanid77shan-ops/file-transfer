@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -10,6 +12,7 @@ body {
   min-height: 100svh;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100;
 }
 
 #root {

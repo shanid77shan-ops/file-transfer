@@ -56,7 +56,7 @@ export function EditableItemName({ name, saving, onSave }: EditableItemNameProps
         autoFocus
         maxLength={120}
         aria-label="Edit item name"
-        className="w-full rounded-md border border-red-300 bg-white px-2 py-1 text-sm font-bold text-red-600 outline-none ring-red-200 focus:ring-2 sm:text-base"
+        className="w-full rounded-md border border-red-300 bg-white px-2 py-1 text-sm font-bold text-red-600 outline-none ring-red-200 focus:ring-2 dark:border-red-700 dark:bg-slate-800 dark:text-red-400 dark:ring-red-900 sm:text-base"
       />
     )
   }
@@ -70,7 +70,7 @@ export function EditableItemName({ name, saving, onSave }: EditableItemNameProps
       className="group flex w-full min-w-0 items-start gap-1 text-left disabled:opacity-60"
       aria-label={`Rename ${name}`}
     >
-      <span className="line-clamp-2 min-w-0 flex-1 text-sm font-bold leading-snug text-red-600 sm:text-base">
+      <span className="line-clamp-2 min-w-0 flex-1 text-sm font-bold leading-snug text-red-600 dark:text-red-400 sm:text-base">
         {name}
       </span>
       {saving ? (
